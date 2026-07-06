@@ -5,6 +5,9 @@ import gspread
 # 1. Verbindungsdaten aus den Streamlit Secrets laden
 creds_dict = dict(st.secrets["gcp_service_account"])
 
+# KORREKTUR: Die falschen Text-Umbrüche in echte Zeilenumbrüche umwandeln
+creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
+
 # 2. Bei Google anmelden
 gc = gspread.service_account_from_dict(creds_dict)
 
