@@ -1,0 +1,69 @@
+import streamlit as st
+import json
+import gspread
+
+# Wir laden die Credentials aus den Streamlit Secrets
+creds_dict = st.secrets["gcp_service_account"]
+
+# Wir erstellen den Client aus dem Dictionary (statt aus einer Datei)
+gc = gspread.service_account_from_dict(creds_dict)
+
+# Funktion zum Laden der Daten
+def lade_daten():
+    gc = gspread.service_account(filename=r'C:\Users\aleks\OneDrive\Desktop\Finanzen.py\credentials.json')
+    sh = gc.open("Familien Finanzen Datenbank").sheet1
+    data = sh.get_all_records()
+    return pd.DataFrame(data)
+
+st.title("Unsere Haushaltsfinanzen")
+
+# --- ERWEITERTES FORMULAR ---
+with st.form("ausgabe_form"):
+    col1, col2 = st.columns(2)
+    with col1:
+        datum = st.date_input("Datum")
+        wer = st.selectbox("Wer?", ["Aleksandar", "Marija"])
+        typ = st.selectbox("Typ", ["Ausgabe", "Einnahme"])
+    with col2:
+        konto = st.selectbox("Konto", ["Bar", "Bank", "Kreditkarte"])
+        kategorie = st.selectbox("Kategorie", ["Lebensmittel", "Miete", "Freizeit", "Gehalt", "Sonstiges"])
+        betrag = st.number_input("Betrag", min_value=0.0, format="%.2f")
+    notiz = st.text_input("Notiz")
+    submit = st.form_submit_button("Eintragen")
+
+if submit:
+    gc = gspread.service_account(filename=r'C:\Users\aleks\OneDrive\Desktop\Finanzen.py\credentials.json')
+    sh = gc.open("Familien Finanzen Datenbank").sheet1
+    sh.append_row([str(datum), wer, konto, kategorie, typ, betrag, notiz])
+    st.success("Erfolgreich gespeichert!")
+    st.rerun()
+
+# --- ANALYSE UND LISTE ---
+st.divider()
+try:
+    df = lade_daten()
+    if not df.empty:
+        # Berechnung Einnahmen/Ausgaben
+        einnahmen = df[df['Typ'] == 'Einnahme']['Betrag'].sum()
+        ausgaben = df[df['Typ'] == 'Ausgabe']['Betrag'].sum()
+        
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Gesamt Einnahmen", f"{einnahmen:.2f} €")
+        col2.metric("Gesamt Ausgaben", f"{ausgaben:.2f} €")
+        col3.metric("Bilanz", f"{(einnahmen - ausgaben):.2f} €")
+        
+        st.subheader("Bisherige Buchungen")
+        st.dataframe(df)
+    else:
+        st.warning("Tabelle ist leer.")
+except Exception as e:
+    st.error(f"Fehler beim Laden: {e}")
+
+# --- LÖSCHEN ---
+st.subheader("Eintrag löschen")
+zeilennummer = st.number_input("Zeilennummer:", min_value=2, step=1)
+if st.button("Löschen"):
+    gc = gspread.service_account(filename=r'C:\Users\aleks\OneDrive\Desktop\Finanzen.py\credentials.json')
+    sh = gc.open("Familien Finanzen Datenbank").sheet1
+    sh.delete_rows(zeilennummer)
+    st.rerun()
