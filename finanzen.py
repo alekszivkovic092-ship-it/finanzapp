@@ -8,7 +8,7 @@ creds_dict = dict(st.secrets["gcp_service_account"])
 # KORREKTUR: Die falschen Text-Umbrüche in echte Zeilenumbrüche umwandeln
 creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
 
-# 2. Bei Google anmelden
+# 2. Bei Google anmelden (Diese Verbindung gilt für das gesamte Skript)
 gc = gspread.service_account_from_dict(creds_dict)
 
 # 3. Funktion zum Laden der Daten
@@ -34,7 +34,7 @@ with st.form("ausgabe_form"):
     submit = st.form_submit_button("Eintragen")
 
 if submit:
-    gc = gspread.service_account(filename=r'C:\Users\aleks\OneDrive\Desktop\Finanzen.py\credentials.json')
+    # KORREKTUR: Der lokale PC-Pfad wurde gelöscht. Wir nutzen die sichere Verbindung von oben.
     sh = gc.open("Familien Finanzen Datenbank").sheet1
     sh.append_row([str(datum), wer, konto, kategorie, typ, betrag, notiz])
     st.success("Erfolgreich gespeichert!")
@@ -65,7 +65,7 @@ except Exception as e:
 st.subheader("Eintrag löschen")
 zeilennummer = st.number_input("Zeilennummer:", min_value=2, step=1)
 if st.button("Löschen"):
-    gc = gspread.service_account(filename=r'C:\Users\aleks\OneDrive\Desktop\Finanzen.py\credentials.json')
+    # KORREKTUR: Auch hier wurde der PC-Pfad entfernt.
     sh = gc.open("Familien Finanzen Datenbank").sheet1
-    sh.delete_rows(zeilennummer)
+    sh.delete_rows(int(zeilennummer))
     st.rerun()
