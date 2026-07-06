@@ -1,14 +1,15 @@
+import streamlit as st
+import pandas as pd
 import gspread
-import json
-creds = dict(st.secrets[...]) 
-gc = gspread.service_account_from_dict(creds)
 
-# Zugriff auf die Tabelle
+# 1. Verbindungsdaten aus den Streamlit Secrets laden
+creds_dict = dict(st.secrets["gcp_service_account"])
+
+# 2. Bei Google anmelden
 gc = gspread.service_account_from_dict(creds_dict)
 
-# Funktion zum Laden der Daten
+# 3. Funktion zum Laden der Daten
 def lade_daten():
-    gc = gspread.service_account(filename=r'C:\Users\aleks\OneDrive\Desktop\Finanzen.py\credentials.json')
     sh = gc.open("Familien Finanzen Datenbank").sheet1
     data = sh.get_all_records()
     return pd.DataFrame(data)
