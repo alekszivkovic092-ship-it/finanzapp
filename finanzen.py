@@ -1,9 +1,6 @@
-import streamlit as st
 import gspread
 import json
-
-# Wir laden die Daten aus den Secrets
-creds = dict(st.secrets["gcp_service_account"])
+creds = dict(st.secrets[...]) 
 gc = gspread.service_account_from_dict(creds)
 
 # Zugriff auf die Tabelle
