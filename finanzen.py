@@ -3,7 +3,7 @@ import json
 import gspread
 
 # Wir laden die Credentials aus den Streamlit Secrets
-creds_dict = st.secrets["gcp_service_account"]
+creds_dict = st.secrets["connections"]["gsheets"]
 
 # Wir erstellen den Client aus dem Dictionary (statt aus einer Datei)
 gc = gspread.service_account_from_dict(creds_dict)
